@@ -6,20 +6,19 @@ import EditAuthor from './components/editAuthor'
 import { gql, useQuery, useMutation } from '@apollo/client'
 
 const ALL_AUTHORS = gql`
-  query {
+  {
     allAuthors  {
       name
       born
-      bookCount
     }
   }
 `
 
 const ALL_BOOKS = gql`
   query {
-    allBooks  {
+   allBooks  {
       title
-      author
+      author {name, born}
       published
       genres
     }
