@@ -5,12 +5,14 @@ import NewBook from './components/NewBook'
 import EditAuthor from './components/editAuthor'
 import { gql, useQuery, useMutation } from '@apollo/client'
 import LoginForm from './components/loginForm'
+import { useApolloClient } from '@apollo/client'
 
 const ALL_AUTHORS = gql`
   {
     allAuthors  {
       name
       born
+      bookCount
     }
   }
 `
@@ -27,17 +29,16 @@ const ALL_BOOKS = gql`
 `
 
 const ADD_BOOK = gql`
-  mutation createBook($title: String!, $name: String!, $published: Int, $genres: [String]!) {
+  mutation createBook($title: String!, $author: String!, $published: Int, $genres: [String]!) {
     addBook(
       title: $title,
-      name: $name,
+      name: $author,
       published: $published,
       genres: $genres
     ){
       title
-      author
+      author{name}
       published
-      genres
     }
   }
 `
@@ -66,6 +67,7 @@ export const LOGIN = gql`
 const App = () => {
   const [page, setPage] = useState('authors')
   const [token, setToken] = useState(null)
+  const client = useApolloClient()
 
 
   const allauthors = useQuery(ALL_AUTHORS, {
@@ -79,6 +81,12 @@ const App = () => {
   const [addBook] = useMutation(ADD_BOOK)
 
   const [editAuthor] = useMutation(EDIT_AUTH)
+
+  const logout = () => {
+    setToken(null)
+    localStorage.clear()
+    client.resetStore()
+  }
 
   if (!token) {
     return (
@@ -110,7 +118,7 @@ const App = () => {
         <button onClick={() => setPage('authors')}>authors</button>
         <button onClick={() => setPage('books')}>books</button>
         <button onClick={() => setPage('add')}>add book</button>
-        <button onClick={() => setToken(null)}>log out</button>
+        <button onClick={() => logout}>log out</button>
       </div>
 
       <Authors show= {page === 'authors'} result={allauthors} 

@@ -21,7 +21,7 @@ const NewBook = (props) => {
     })
 
     setTitle('')
-    setPublished('')
+    setPublished(null)
     setAuhtor('')
     setGenres([])
     setGenre('')

@@ -7,6 +7,7 @@ const User = require('./models/user')
 const jwt = require('jsonwebtoken')
 
 
+
 const password = process.argv[2]
 
 const MONGODB_URI = `mongodb+srv://millalin:${password}@cluster0.k26ow.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
@@ -96,7 +97,6 @@ const { v1: uuid } = require('uuid')
 
 const resolvers = {
   Query: {
-    bookCount: () => Book.collection.countDocuments(),
     authorCount: () => Author.collection.countDocuments(),
     allBooks: async (root, args) => {
         if (!args.author && !args.genre ) {
@@ -116,11 +116,6 @@ const resolvers = {
     }
   },
 
-  Author: {
-    bookCount: async (root, args) => {
-      const author_bookcount = await Author.findOne({ name: args.name})
-      return author_bookcount.bookCount
-    }  },
   Mutation: {
     addBook: async (root, args, context) => {
       const currentUser = context.currentUser
@@ -154,7 +149,7 @@ const resolvers = {
         return author.save()
       },    
     
-    editAuthor: async (root, args) => {
+    editAuthor: async (root, args, context) => {
       const currentUser = context.currentUser  
       if (!currentUser) {
         throw new AuthenticationError("No auth")
