@@ -58,6 +58,7 @@ const typeDefs = gql`
     allBooks (author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
     me: User
+    genres: [String]
   }
 
 
@@ -93,6 +94,7 @@ const typeDefs = gql`
       ): Token
   }
 `
+
 const { v1: uuid } = require('uuid')
 
 const resolvers = {
@@ -103,17 +105,18 @@ const resolvers = {
             return await Book.find({}).populate('author')
         }
         if (args.author && !args.genre) {
-            return await books.find( {name: args.name})    
+            return await Book.find( {name: args.name})    
         }
         if (args.genre && !args.author) {
-            return await books.find( {genres: {$in : [args.genre]}}).populate('author')
+            return await Book.find( {genres: {$in : [args.genre]}}).populate('author')
         }
-        return await books.find({}).populate('author')
+        return await Book.find({}).populate('author')
     },
     allAuthors: async () => { return await Author.find({})},
     me: (root, args, context) => {
       return context.currentUser
-    }
+    },
+    genres: () => { return Book.collection.distinct("genres")}
   },
 
   Mutation: {

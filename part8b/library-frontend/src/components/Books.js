@@ -1,7 +1,5 @@
-
-import React from 'react'
-
 const Books = ({show, result}) => {
+
   if (!show) {
     return null
   } else if (result.loading) {
@@ -24,16 +22,22 @@ const Books = ({show, result}) => {
             <th>
               published
             </th>
+            <th>
+              genres
+            </th>
           </tr>
           {books.map(a =>
             <tr key={a.title}>
               <td>{a.title}</td>
               <td>{a.author.name}</td>
               <td>{a.published}</td>
+              <td>{a.genres}</td>
             </tr>
           )}
         </tbody>
       </table>
+      <div>
+      </div>
     </div>
   )
 }
