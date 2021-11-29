@@ -59,6 +59,7 @@ const typeDefs = gql`
     allAuthors: [Author!]!
     me: User
     genres: [String]
+    favoriteBooks: [Book]
   }
 
 
@@ -116,7 +117,12 @@ const resolvers = {
     me: (root, args, context) => {
       return context.currentUser
     },
-    genres: () => { return Book.collection.distinct("genres")}
+    genres: () => { return Book.collection.distinct("genres")},
+    favoriteBooks: async (root, args, context) => {
+      const user = await context.currentUser
+      const genre = await user.favoriteGenre
+      return await Book.find( {genres: {$in : [genre]}}).populate('author')
+    }
   },
 
   Mutation: {
@@ -163,7 +169,7 @@ const resolvers = {
     },
 
     createUser: async (root, args) => {
-      const user = new User({ username: args.username })
+      const user = new User({ username: args.username, favoriteGenre: args.favoriteGenre })
   
       return await user.save()
         .catch(error => {

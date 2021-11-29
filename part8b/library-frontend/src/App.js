@@ -7,6 +7,7 @@ import EditAuthor from './components/editAuthor'
 import { gql, useQuery, useMutation } from '@apollo/client'
 import LoginForm from './components/loginForm'
 import { useApolloClient } from '@apollo/client'
+import Recommendations from './components/Recommendations'
 
 const ALL_AUTHORS = gql`
   {
@@ -23,6 +24,17 @@ const ALL_BOOKS = gql`
    allBooks(
      genre: $genre
    ) {
+      title
+      author {name, born}
+      published
+      genres
+    }
+  }
+`
+
+const FAVORITE_BOOKS = gql`
+{
+   favoriteBooks {
       title
       author {name, born}
       published
@@ -91,11 +103,14 @@ const App = () => {
     variables: {genre}
   })
 
+  const favoriteBooks = useQuery(FAVORITE_BOOKS)
+
   const [addBook] = useMutation(ADD_BOOK)
 
   const [editAuthor] = useMutation(EDIT_AUTH)
 
   const listgenres = useQuery(GENRES)
+
 
   const logout = () => {
     setToken(null)
@@ -135,6 +150,7 @@ const App = () => {
         <button onClick={() => setPage('authors')}>authors</button>
         <button onClick={() => setPage('books')}>books</button>
         <button onClick={() => setPage('add')}>add book</button>
+        <button onClick={() => setPage('rec')}>recommendations</button>
         <button onClick={() => logout}>log out</button>
       </div>
 
@@ -144,7 +160,7 @@ const App = () => {
       <EditAuthor show = {page === 'authors'} editAuthor={editAuthor}
       />
 
-      <Genres result={listgenres} pick={(genre) => showGenre(genre)}/>
+      <Genres show={page === 'books'} result={listgenres} pick={(genre) => showGenre(genre)}/>
 
       <Books
         show={page === 'books'} result={allbooks}
@@ -152,6 +168,10 @@ const App = () => {
 
       <NewBook
         show={page === 'add'} result={addBook}
+      />
+
+      <Recommendations
+        show={page === 'rec'} result={favoriteBooks}
       />
 
     </div>
