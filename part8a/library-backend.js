@@ -5,7 +5,8 @@ const Author = require('./models/author')
 const Book = require('./models/book')
 const User = require('./models/user')
 const jwt = require('jsonwebtoken')
-
+const { PubSub } = require('apollo-server')
+const pubsub = new PubSub()
 
 
 const password = process.argv[2]
@@ -62,6 +63,9 @@ const typeDefs = gql`
     favoriteBooks: [Book]
   }
 
+  type Subscription {
+    bookAdded: Book!
+  }    
 
   type Mutation {
       addBook(
@@ -102,16 +106,16 @@ const resolvers = {
   Query: {
     authorCount: () => Author.collection.countDocuments(),
     allBooks: async (root, args) => {
-        if (!args.author && !args.genre ) {
-            return await Book.find({}).populate('author')
-        }
-        if (args.author && !args.genre) {
-            return await Book.find( {name: args.name})    
-        }
-        if (args.genre && !args.author) {
-            return await Book.find( {genres: {$in : [args.genre]}}).populate('author')
-        }
-        return await Book.find({}).populate('author')
+      if (!args.author && !args.genre ) {
+          return await Book.find({}).populate('author')
+      }
+      if (args.author && !args.genre) {
+          return await Book.find( {name: args.name})    
+      }
+      if (args.genre && !args.author) {
+        return await Book.find( {genres: {$in : [args.genre]}}).populate('author')
+      }
+      return await Book.find({}).populate('author')
     },
     allAuthors: async () => { return await Author.find({})},
     me: (root, args, context) => {
@@ -125,6 +129,11 @@ const resolvers = {
     }
   },
 
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator(['BOOK_ADDED'])
+    },
+  },
   Mutation: {
     addBook: async (root, args, context) => {
       const currentUser = context.currentUser
@@ -145,7 +154,8 @@ const resolvers = {
       } catch(error) {
         throw new UserInputError("Failed to save a book")
       }
-        return book
+      pubsub.publish('BOOK_ADDED', { bookAdded: book })
+      return book
     },
 
     addAuthor: async (root, args) => {          
@@ -212,6 +222,7 @@ const server = new ApolloServer({
   }
 })
 
-server.listen().then(({ url }) => {
+server.listen().then(({ url, subscriptionsUrl }) => {
   console.log(`Server ready at ${url}`)
+  console.log(`Subscriptions ready at ${subscriptionsUrl}`)
 })
