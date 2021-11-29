@@ -4,6 +4,7 @@ import Books from './components/Books'
 import NewBook from './components/NewBook'
 import EditAuthor from './components/editAuthor'
 import { gql, useQuery, useMutation } from '@apollo/client'
+import LoginForm from './components/loginForm'
 
 const ALL_AUTHORS = gql`
   {
@@ -26,10 +27,10 @@ const ALL_BOOKS = gql`
 `
 
 const ADD_BOOK = gql`
-  mutation createBook($title: String!, $author: String!, $published: Int, $genres: [String]!) {
+  mutation createBook($title: String!, $name: String!, $published: Int, $genres: [String]!) {
     addBook(
       title: $title,
-      author: $author,
+      name: $name,
       published: $published,
       genres: $genres
     ){
@@ -53,8 +54,18 @@ const EDIT_AUTH = gql`
   }
 `
 
+export const LOGIN = gql`
+  mutation login($username: String!, $password: String!) {
+    login(username: $username, password: $password)  {
+      value
+    }
+  }
+`
+
+
 const App = () => {
   const [page, setPage] = useState('authors')
+  const [token, setToken] = useState(null)
 
 
   const allauthors = useQuery(ALL_AUTHORS, {
@@ -69,12 +80,37 @@ const App = () => {
 
   const [editAuthor] = useMutation(EDIT_AUTH)
 
+  if (!token) {
+    return (
+      <div>
+      <div>
+        <button onClick={() => setPage('authors')}>authors</button>
+        <button onClick={() => setPage('books')}>books</button>
+        <button onClick={() => setPage('login')}>login</button>
+      </div>
+
+      <LoginForm 
+        show={page === 'login'} login ={LOGIN} setToken= {(token)=>setToken(token)}
+      />
+
+      <Authors show= {page === 'authors'} result={allauthors} 
+      />
+
+      <Books
+        show={page === 'books'} result={allbooks}
+      />
+
+
+    </div>
+    )
+  }
   return (
     <div>
       <div>
         <button onClick={() => setPage('authors')}>authors</button>
         <button onClick={() => setPage('books')}>books</button>
         <button onClick={() => setPage('add')}>add book</button>
+        <button onClick={() => setToken(null)}>log out</button>
       </div>
 
       <Authors show= {page === 'authors'} result={allauthors} 
