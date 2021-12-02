@@ -4,9 +4,8 @@ import Books from './components/Books'
 import NewBook from './components/NewBook'
 import Genres from './components/Genres'
 import EditAuthor from './components/editAuthor'
-import { gql, useQuery, useMutation } from '@apollo/client'
+import { gql, useQuery, useMutation, useSubscription, useApolloClient } from '@apollo/client'
 import LoginForm from './components/loginForm'
-import { useApolloClient } from '@apollo/client'
 import Recommendations from './components/Recommendations'
 
 const ALL_AUTHORS = gql`
@@ -56,6 +55,28 @@ const ADD_BOOK = gql`
       published
     }
   }
+`
+
+const BOOK_DETAILS = gql`
+  fragment BookDetails on Book {
+    title
+    author {
+      name,
+      born,
+      bookCount
+    } 
+    published
+  }
+`
+
+export const BOOK_ADDED = gql`
+  subscription {
+    bookAdded {
+      ...BookDetails
+    }
+  }
+  
+${BOOK_DETAILS}
 `
 
 const EDIT_AUTH = gql`
@@ -117,6 +138,14 @@ const App = () => {
     localStorage.clear()
     client.resetStore()
   }
+
+  useSubscription(BOOK_ADDED, {
+    onSubscriptionData: ({ subscriptionData }) => {
+      console.log(subscriptionData)
+      window.alert(`Book added ${subscriptionData.data.bookAdded.title}
+      from author ${subscriptionData.data.bookAdded.name}`)
+    }
+  })
 
   if (!token) {
     return (

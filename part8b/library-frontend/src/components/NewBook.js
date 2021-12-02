@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 const NewBook = (props) => {
   const [title, setTitle] = useState('')
   const [author, setAuhtor] = useState('')
-  const [published, setPublished] = useState(null)
+  const [published, setPublished] = useState('')
   const [genre, setGenre] = useState('')
   const [genres, setGenres] = useState([])
 
@@ -21,7 +21,7 @@ const NewBook = (props) => {
     })
 
     setTitle('')
-    setPublished(null)
+    setPublished('')
     setAuhtor('')
     setGenres([])
     setGenre('')
